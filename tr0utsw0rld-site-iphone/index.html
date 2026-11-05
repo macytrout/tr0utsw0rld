@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ======================= ORDER SETTINGS (edit these) =======================
+  spotsLeft : how many custom orders you're still taking.
+              Lower it by 1 each time a request comes in (5 → 4 → 3 …).
+              At 0, the order form closes and shows the waitlist message.
+  reopens   : when the waitlist opens again (shown while orders are closed).
+============================================================================ -->
+<script>
+  const SETTINGS = {
+    spotsLeft: 5,
+    reopens: "January 2027"
+  };
+</script>
+
+<title>tr0utsw0rld — custom crochet bags</title>
+<meta name="description" content="Handmade crochet bags, made to order. Send your colors and your inspo.">
+<meta name="theme-color" content="#f1f0ed">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  /* ===== Colors from the Rhode résumé ===== */
+  :root{
+    --paper:#f1f0ed;     /* background */
+    --paper-lt:#f7f6f3;
+    --putty:#e8e0d2;
+    --ink:#34312c;       /* headlines + rules */
+    --text:#67645e;      /* body text */
+    --taupe:#84827e;
+    --rule:#c4c4c4;
+    --rose:#af4a6a;      /* accent (your name color) */
+    --head:"IM Fell English",Georgia,serif;
+    --serif:"Newsreader",Georgia,serif;
+    --sans:"Inter",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none !important}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--text);font-family:var(--serif);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  /* faint newsprint grain */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.07;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  img{display:block;max-width:100%}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+
+  /* small caps label style used everywhere */
+  .caps{font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:var(--ink)}
+  .brand{text-transform:none;letter-spacing:.05em}
+
+  /* ===== Masthead ===== */
+  .masthead{padding-top:30px}
+  .mast{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+  .ear{border:1px solid var(--ink);padding:10px 14px;line-height:1.7;max-width:180px}
+  .ear.left{justify-self:start}
+  .ear.right{justify-self:end;text-align:right}
+  .logo{width:clamp(160px,23vw,230px);height:auto;transform:rotate(-1.5deg);filter:drop-shadow(0 4px 5px rgba(52,49,44,.16))}
+  .dateline{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding:8px 2px;border-top:1px solid var(--ink);border-bottom:4px double var(--ink)}
+
+  /* ===== Front page ===== */
+  .front{text-align:center;padding-top:40px}
+  .kicker{color:var(--rose)}
+  h1{font-family:var(--head);font-weight:400;color:var(--ink);font-size:clamp(2.7rem,7.6vw,5.6rem);line-height:.98;letter-spacing:-.01em;margin:12px auto 16px;max-width:13ch}
+  .deck{font-style:italic;font-size:clamp(1.12rem,2.2vw,1.35rem);max-width:36ch;margin:0 auto}
+  h1,.deck,.pull,.thanks h2,.coupon-head h2,.kicker{text-wrap:balance}
+  figcaption,.story p,.hint,.ad p,.notice p{text-wrap:pretty}
+
+  .lead{display:grid;grid-template-columns:1.05fr 1fr;margin-top:34px;padding-top:28px;border-top:1px solid var(--ink);text-align:left}
+  .lead figure{padding-right:32px}
+  .story{padding-left:32px;border-left:1px solid var(--rule)}
+  figure img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;background:var(--putty)}
+  figcaption{font-size:14px;font-style:italic;line-height:1.4;margin-top:9px}
+  figcaption b{font-family:var(--sans);font-style:normal;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-right:6px}
+
+  .story h2{font-family:var(--head);font-weight:400;font-size:2.3rem;line-height:1.05;color:var(--ink)}
+  .byline{margin:8px 0 18px;font-weight:500;color:var(--text)}
+  .story p{margin-bottom:14px}
+  .dropcap::first-letter{font-family:var(--head);float:left;font-size:4.3em;line-height:.78;padding:7px 9px 0 0;color:var(--ink)}
+  .steps{list-style:none;counter-reset:s;margin:20px 0 18px;border-top:1px solid var(--rule)}
+  .steps li{counter-increment:s;display:grid;grid-template-columns:36px 1fr;padding:12px 0;border-bottom:1px solid var(--rule)}
+  .steps li::before{content:counter(s);font-family:var(--head);font-size:1.6rem;line-height:1.05;color:var(--rose)}
+  .steps b{font-weight:500;color:var(--ink)}
+  .pull{margin-top:30px;padding:18px 6px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);font-family:var(--head);font-style:italic;font-size:1.7rem;line-height:1.2;color:var(--ink);text-align:center}
+
+  .btn{display:inline-block;font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--paper);background:var(--ink);border:0;padding:15px 28px;border-radius:40px;cursor:pointer;transition:background .2s}
+  .btn:hover{background:var(--rose)}
+  .btn:disabled{opacity:.6;cursor:wait}
+
+  /* ===== Recent work ===== */
+  .section-head{display:flex;align-items:center;gap:16px;margin:64px 0 24px}
+  .section-head::before,.section-head::after{content:"";flex:1;height:1px;background:var(--ink)}
+  .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:26px 22px}
+  .strip figcaption{font-size:13.5px}
+
+  /* ===== Customizations (classified-ads style) ===== */
+  .custom-intro{text-align:center;margin:-6px auto 22px}
+  .ads{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .ad{padding:18px 18px 22px;border-left:1px solid var(--rule)}
+  .ad:first-child{border-left:0;padding-left:4px}
+  .ad h3{font-family:var(--head);font-weight:400;font-size:1.5rem;line-height:1.1;color:var(--ink);margin-bottom:8px}
+  .ad p{font-size:15.5px;line-height:1.45}
+  .notice{max-width:660px;margin:28px auto 0;border:3px double var(--ink);background:var(--paper-lt);padding:18px 24px 20px;text-align:center}
+  .notice .caps{color:var(--rose);margin-bottom:6px}
+  .notice p + p{font-size:16.5px;line-height:1.5}
+
+  /* ===== Order form (newspaper coupon) ===== */
+  .order{max-width:820px;margin:72px auto 0}
+  .coupon{position:relative;border:1.5px dashed var(--ink);background:var(--paper-lt);padding:46px 46px 38px}
+  .scissors{position:absolute;top:-16px;left:34px;background:var(--paper);padding:0 8px;font-size:22px;line-height:1;color:var(--ink)}
+  .coupon-head{text-align:center;margin-bottom:8px}
+  .coupon-head h2{font-family:var(--head);font-weight:400;font-size:clamp(2.1rem,5vw,3rem);line-height:1.05;color:var(--ink);margin:8px 0 10px}
+
+  .part{border-top:1px solid var(--ink);padding-top:18px;margin-top:34px}
+  .part-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;font-family:var(--head);font-weight:400;font-size:1.55rem;color:var(--ink);margin-bottom:14px}
+  .part-title .caps{color:var(--rose);font-size:10.5px}
+  .hint{font-size:15.5px;font-style:italic;margin:-4px 0 16px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .field{margin-bottom:20px}
+  .field > label,.lbl{display:block;margin-bottom:4px}
+  .opt{font-family:var(--serif);font-size:13.5px;font-style:italic;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text);margin-left:4px}
+
+  input[type=text],input[type=email],input[type=date]{width:100%;font-family:var(--serif);font-size:18px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--ink);border-radius:0;padding:6px 2px 7px;outline:none;-webkit-appearance:none;appearance:none;min-height:42px}
+  input[type=date]::-webkit-date-and-time-value{text-align:left}
+  textarea{width:100%;display:block;font-family:var(--serif);font-size:17px;color:var(--ink);border:0;border-radius:0;outline:none;resize:vertical;min-height:133px;padding:0 2px;line-height:33px;background:transparent;
+    background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 32px,var(--ink) 32px,var(--ink) 33px);background-attachment:local}
+  input:focus{border-bottom-color:var(--rose);box-shadow:0 1px 0 var(--rose)}
+  textarea:focus{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 32px,var(--rose) 32px,var(--rose) 33px)}
+  ::placeholder{color:#a3a3a3;font-style:italic}
+
+  /* ballot boxes (radios + checkboxes) */
+  .ballot{display:flex;flex-wrap:wrap;gap:12px 28px}
+  .ballot label{position:relative;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:18px;color:var(--ink)}
+  .ballot input{position:absolute;left:0;top:0;opacity:0;width:1px;height:1px}
+  .box{position:relative;width:19px;height:19px;border:1.5px solid var(--ink);flex-shrink:0}
+  .box::before,.box::after{content:"";position:absolute;left:50%;top:50%;width:17px;height:2px;background:var(--rose);opacity:0;transform:translate(-50%,-50%) rotate(45deg)}
+  .box::after{transform:translate(-50%,-50%) rotate(-45deg)}
+  .ballot input:checked + .box::before,.ballot input:checked + .box::after{opacity:1}
+  .ballot input:focus-visible + .box{outline:2px solid var(--rose);outline-offset:3px}
+  .ballot.confirm label{align-items:flex-start;font-size:16.5px;line-height:1.4}
+  .ballot.confirm .box{margin-top:2px}
+  .mini-notice{font-size:14.5px;font-style:italic;margin:16px 0 0}
+  .mini-notice .caps{font-style:normal;font-size:10px;color:var(--rose);margin-right:6px}
+  .cond{margin-top:20px}
+
+  /* picture boxes: the classic layout "X" placeholder */
+  .place{position:relative;display:block;border:1px solid var(--ink);overflow:hidden;cursor:pointer;
+    background:
+      linear-gradient(to top right,transparent calc(50% - .6px),var(--rule) calc(50% - .6px),var(--rule) calc(50% + .6px),transparent calc(50% + .6px)),
+      linear-gradient(to bottom right,transparent calc(50% - .6px),var(--rule) calc(50% - .6px),var(--rule) calc(50% + .6px),transparent calc(50% + .6px)),
+      var(--paper)}
+  .place input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3}
+  .place img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:1}
+  .place .tag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--paper-lt);border:1px solid var(--ink);padding:9px 14px;text-align:center;white-space:nowrap;z-index:2}
+  .place .tag small{display:block;font-family:var(--serif);font-size:13px;font-style:italic;font-weight:400;letter-spacing:0;text-transform:none;color:var(--text);margin-top:2px}
+  .place .x{position:absolute;top:8px;right:8px;z-index:4;width:30px;height:30px;border-radius:50%;border:1px solid var(--ink);background:var(--paper-lt);color:var(--ink);font-size:17px;line-height:1;cursor:pointer;display:none}
+  .place.filled img{display:block}
+  .place.filled .tag{display:none}
+  .place.filled .x{display:grid;place-items:center}
+  .place.over{outline:2px solid var(--rose);outline-offset:3px}
+  .palette-place{height:240px}
+  .inspo-places{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+  .inspo-places .place{aspect-ratio:3/4}
+
+  /* extracted colors, like a printer's color bar */
+  .colorbar{display:none;margin-top:14px}
+  .colorbar.show{display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{position:relative;width:66px;border:1px solid var(--ink);background:var(--paper-lt);padding:0;font:inherit;cursor:pointer;text-align:center}
+  .chip i{display:block;height:44px;border-bottom:1px solid var(--ink);font-style:normal}
+  .chip span{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.04em;padding:5px 0;color:var(--ink)}
+  button.chip:hover span{text-decoration:line-through}
+  .chip.add i{display:grid;place-items:center;font-family:var(--sans);font-size:22px;color:var(--ink)}
+  .chip.add input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+  .colorbar .hint{margin:10px 0 0;font-size:14px}
+
+  .send{text-align:center;margin-top:36px;padding-top:28px;border-top:1px solid var(--ink)}
+  .err{color:var(--rose);font-style:italic;font-size:15.5px;min-height:1.4em;margin-top:12px}
+  .fine{font-size:14px;font-style:italic}
+  .hp{position:absolute;left:-9999px}
+
+  /* ===== Closed state (spotsLeft = 0) ===== */
+  .closed-note{display:none;text-align:center;padding:6px 0 4px}
+  .stamp{display:inline-block;transform:rotate(-6deg);border:2.5px solid var(--rose);color:var(--rose);padding:7px 16px;margin:4px 0 18px;font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.24em;text-transform:uppercase}
+  .closed-note h2{font-family:var(--head);font-weight:400;font-size:clamp(2.2rem,5.4vw,3.3rem);line-height:1.04;color:var(--ink);margin:6px 0 14px;text-wrap:balance}
+  body.closed .closed-note{display:block}
+  body.closed #inquiry,body.closed .coupon-head{display:none}
+
+  /* ===== Thank-you state ===== */
+  .thanks{display:none;text-align:center;max-width:640px;margin:0 auto;padding:70px 0 20px}
+  .thanks h2{font-family:var(--head);font-weight:400;font-size:clamp(2.4rem,6vw,3.8rem);line-height:1.02;color:var(--ink);margin:12px 0 16px}
+  .thanks .btn{margin-top:28px}
+  body.sent .thanks{display:block}
+  body.sent .front,body.sent .pictures,body.sent .custom,body.sent .order{display:none}
+
+  footer{display:flex;justify-content:space-between;gap:12px;margin-top:80px;padding:16px 2px 40px;border-top:4px double var(--ink)}
+
+  /* ===== Tablet ===== */
+  @media (min-width:861px){ .story p{text-align:justify;hyphens:auto} }
+  @media (max-width:860px){
+    .lead{grid-template-columns:1fr}
+    .lead figure{padding-right:0}
+    .story{padding:26px 0 0;border-left:0}
+    .ads{grid-template-columns:1fr}
+    .ad,.ad:first-child{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:baseline;border-left:0;border-top:1px solid var(--rule);padding:14px 2px}
+    .ad:first-child{border-top:0}
+    .ad h3{margin:0;font-size:1.35rem}
+  }
+  /* ===== Phone ===== */
+  @media (max-width:600px){
+    body{font-size:17px}
+    .wrap{padding:0 18px}
+    .mast{grid-template-columns:1fr}
+    .mast picture{justify-self:center}
+    .ear{display:none}
+    .dateline{font-size:9.5px;letter-spacing:.12em}
+    .dateline .hide-sm{display:none}
+    .front{padding-top:30px}
+    .lead{margin-top:26px;padding-top:22px}
+    .strip{grid-template-columns:repeat(2,1fr);gap:14px}
+    .section-head{margin:48px 0 18px}
+    .ad,.ad:first-child{grid-template-columns:112px 1fr;gap:12px}
+    .ad h3{font-size:1.2rem}
+    .ad p{font-size:15px}
+    .notice{padding:16px 16px 18px}
+    .order{margin-top:56px}
+    .coupon{padding:36px 18px 28px}
+    .scissors{left:20px}
+    .row{grid-template-columns:1fr;gap:0}
+    .ballot{gap:12px 22px}
+    .palette-place{height:200px}
+    .inspo-places{gap:8px}
+    .inspo-places .tag{padding:6px 8px;white-space:normal;width:78%}
+    .inspo-places .tag small{display:none}
+    .pull{font-size:1.45rem}
+    footer{flex-direction:column;align-items:center;text-align:center;gap:6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ======================= MASTHEAD ======================= -->
+<header class="masthead">
+  <div class="mast">
+    <p class="ear left caps">Handmade<br>crochet bags</p>
+    <picture>
+      <source srcset="logo.webp" type="image/webp">
+      <img class="logo" src="logo.png" alt="tr0utsw0rld" width="560" height="521">
+    </picture>
+    <p class="ear right caps">Custom orders<br>by request</p>
+  </div>
+  <div class="dateline caps">
+    <span class="hide-sm">Vol. I &nbsp;·&nbsp; No. 1</span>
+    <span id="today"></span>
+    <span id="spotsLine">Limited spots</span>
+  </div>
+</header>
+
+<main>
+<!-- ======================= FRONT PAGE ======================= -->
+<section class="front">
+  <p class="kicker caps" id="kicker">Now taking custom orders</p>
+  <h1>Custom Bags, Made by Hand</h1>
+  <p class="deck">Send your colors and your inspo — I'll crochet&nbsp;the&nbsp;rest.</p>
+
+  <div class="lead">
+    <figure>
+      <img src="red-handbag.jpg" alt="Chunky red crochet handbag with ties at each side, held at night" width="1200" height="1600">
+      <figcaption><b>Above</b> The red handbag, out after dark — chunky stitch with ties at each side.</figcaption>
+    </figure>
+
+    <article class="story">
+      <h2>How to Order</h2>
+      <p class="byline caps">By <span class="brand">tr0utsw0rld</span></p>
+      <p class="dropcap">Every bag is crocheted by hand, so yours can be made exactly how you picture it — your shape, your colors, your little details.</p>
+      <ol class="steps">
+        <li><span><b>Pick a style.</b> A handbag, a shoulder bag, a mini, a tote — or something new entirely.</span></li>
+        <li><span><b>Send your palette.</b> Upload any photo with colors you love — a sunset, an outfit, a Pinterest screenshot.</span></li>
+        <li><span><b>Share your inspo.</b> Photos, a link, or a few words about the vibe, plus any customizations.</span></li>
+        <li><span><b>I review your request.</b> I'll look it over to see if I can achieve your vision. If I can't, we'll work together to create something based on my capabilities.</span></li>
+      </ol>
+      <p>Then I'll reach out on Instagram with ideas, pricing and timing.</p>
+      <a href="#order" class="btn" id="startBtn">Start your order</a>
+      <blockquote class="pull">“Each bag is made for the person who asked&nbsp;for&nbsp;it.”</blockquote>
+    </article>
+  </div>
+</section>
+
+<!-- ======================= RECENT WORK ======================= -->
+<section class="pictures">
+  <h2 class="section-head caps">Recent Work</h2>
+  <div class="strip">
+    <figure><img src="red-closet.jpg" alt="Red crochet bag with long fringe ties, worn with an all-black outfit" width="720" height="960" loading="lazy"><figcaption>Red, with all black.</figcaption></figure>
+    <figure><img src="blue-mirror.jpg" alt="Blue crochet shoulder bag in a mirror selfie" width="720" height="960" loading="lazy"><figcaption>The blue shoulder bag.</figcaption></figure>
+    <figure><img src="feather-mini.jpg" alt="Rust crochet mini bag trimmed with black feathers" width="720" height="960" loading="lazy"><figcaption>The mini, trimmed in black feathers.</figcaption></figure>
+    <figure><img src="blue-autumn.jpg" alt="Blue crochet shoulder bag on a fall walk" width="720" height="960" loading="lazy"><figcaption>Fall walks, blue in tow.</figcaption></figure>
+    <figure><img src="red-bridge-night.jpg" alt="Walking across a bridge at night with the red handbag" width="720" height="960" loading="lazy"><figcaption>Night out with the red handbag.</figcaption></figure>
+    <figure><img src="blue-autumn-back.jpg" alt="Blue crochet bag with ties, seen from behind" width="720" height="960" loading="lazy"><figcaption>Ties swinging.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ======================= CUSTOMIZATIONS ======================= -->
+<section class="custom" id="customizations">
+  <h2 class="section-head caps">Customizations</h2>
+  <p class="deck custom-intro">Make it yours — add any of these to your order.</p>
+  <div class="ads">
+    <div class="ad"><h3>Jersey Number</h3><p>Your significant other's number, added to your bag. See the note below.</p></div>
+    <div class="ad"><h3>Team Colors</h3><p>Rep their team, with or without their number.</p></div>
+    <div class="ad"><h3>Fringe</h3><p>Long, swingy fringe and ties, like the red bags.</p></div>
+    <div class="ad"><h3>Feathers</h3><p>Feather trim, like the mini.</p></div>
+    <div class="ad"><h3>Something Else?</h3><p>Just ask — I'll let you know what I can do.</p></div>
+  </div>
+  <aside class="notice">
+    <p class="caps">A note on numbers</p>
+    <p>I only add numbers to bags when it's the jersey number of your significant other, family member, or yourself&nbsp;— no other numbers, please. Team colors are always welcome, with or without their number.</p>
+  </aside>
+</section>
+
+<!-- ======================= ORDER FORM ======================= -->
+<section class="order" id="order">
+  <div class="coupon">
+    <span class="scissors" aria-hidden="true">✂</span>
+
+    <!-- shown automatically when spotsLeft is 0 -->
+    <div class="closed-note">
+      <span class="stamp">Closed</span>
+      <h2>This Round Is Full</h2>
+      <p class="deck">Thank you for all the love! Every spot for this round has been claimed. The waitlist will open again <span class="reopens">January 2027</span>.</p>
+    </div>
+
+    <div class="coupon-head">
+      <p class="kicker caps" id="formKicker">Order form</p>
+      <h2>Request a Custom Bag</h2>
+      <p class="deck">Fill it in and press send. I'll reach out on Instagram.</p>
+    </div>
+
+    <!--
+      ===== EMAIL SETUP =====
+      Responses go through FormSubmit (free). After your first test, FormSubmit may email
+      you an activation link — click it. They also give you a random string you can paste
+      in place of your email below so your address isn't visible in the page source.
+    -->
+    <form id="inquiry" action="https://formsubmit.co/macytrout12@gmail.com" method="POST" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="_subject" value="New tr0utsw0rld custom bag request">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" id="nextUrl" value="">
+      <input type="hidden" name="_autoresponse" value="Thank you for your tr0utsw0rld custom bag request! I'll review it to see if I can achieve your vision, and I'll reach out on Instagram soon with ideas, pricing and timing.">
+      <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="Palette colors" id="paletteField">
+
+      <div class="part">
+        <h3 class="part-title"><span class="caps">No. 1</span>About you</h3>
+        <div class="row">
+          <div class="field"><label for="name" class="caps">Name</label><input type="text" id="name" name="Name" autocomplete="name"></div>
+          <div class="field"><label for="ig" class="caps">Instagram</label><input type="text" id="ig" name="Instagram" placeholder="@yourhandle" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+        </div>
+        <div class="field"><label for="email" class="caps">Email <span class="opt">for your confirmation</span></label><input type="email" id="email" name="email" autocomplete="email"></div>
+      </div>
+
+      <div class="part" id="bagPart">
+        <h3 class="part-title"><span class="caps">No. 2</span>The bag</h3>
+        <div class="ballot" role="radiogroup" aria-label="Bag style">
+          <label><input type="radio" name="Bag style" value="Handbag"><span class="box"></span>Handbag</label>
+          <label><input type="radio" name="Bag style" value="Shoulder bag"><span class="box"></span>Shoulder bag</label>
+          <label><input type="radio" name="Bag style" value="Mini bag"><span class="box"></span>Mini bag</label>
+          <label><input type="radio" name="Bag style" value="Tote"><span class="box"></span>Tote</label>
+          <label><input type="radio" name="Bag style" value="Not sure yet"><span class="box"></span>Not sure yet</label>
+        </div>
+      </div>
+
+      <div class="part" id="colorPart">
+        <h3 class="part-title"><span class="caps">No. 3</span>The colors</h3>
+        <p class="hint">Upload a photo with colors you love. The colors get pulled out automatically.</p>
+        <div class="place palette-place" id="palettePlace">
+          <input type="file" name="Palette photo" id="paletteInput" accept="image/*" aria-label="Upload a palette photo">
+          <img alt="Your palette photo">
+          <span class="tag caps">Place palette photo here<small>tap to upload</small></span>
+          <button type="button" class="x" aria-label="Remove photo">×</button>
+        </div>
+        <div class="colorbar" id="colorbar">
+          <div class="chips" id="chips"></div>
+          <p class="hint">Tap a color to remove it, or + to add your own.</p>
+        </div>
+      </div>
+
+      <div class="part">
+        <h3 class="part-title"><span class="caps">No. 4</span>The inspo</h3>
+        <div class="field"><label for="inspo" class="caps">What's the inspo?</label><textarea id="inspo" name="Inspo" placeholder="Describe the bag you're dreaming of…"></textarea></div>
+        <span class="lbl caps">Inspo photos <span class="opt">optional, up to 3</span></span>
+        <div class="inspo-places">
+          <div class="place"><input type="file" name="Inspo photo 1" accept="image/*" aria-label="Upload inspo photo 1"><img alt="Inspo photo 1"><span class="tag caps">Inspo 1<small>tap to upload</small></span><button type="button" class="x" aria-label="Remove photo">×</button></div>
+          <div class="place"><input type="file" name="Inspo photo 2" accept="image/*" aria-label="Upload inspo photo 2"><img alt="Inspo photo 2"><span class="tag caps">Inspo 2<small>tap to upload</small></span><button type="button" class="x" aria-label="Remove photo">×</button></div>
+          <div class="place"><input type="file" name="Inspo photo 3" accept="image/*" aria-label="Upload inspo photo 3"><img alt="Inspo photo 3"><span class="tag caps">Inspo 3<small>tap to upload</small></span><button type="button" class="x" aria-label="Remove photo">×</button></div>
+        </div>
+        <div class="field" style="margin-top:22px"><label for="link" class="caps">Pinterest or other link <span class="opt">optional</span></label><input type="text" inputmode="url" id="link" name="Inspo link" placeholder="pin.it/…"></div>
+      </div>
+
+      <div class="part" id="customPart">
+        <h3 class="part-title"><span class="caps">No. 5</span>Customizations <span class="opt">optional</span></h3>
+        <p class="hint">Pick any you'd like.</p>
+        <div class="ballot" id="customBoxes">
+          <label><input type="checkbox" id="optJersey" value="Jersey number"><span class="box"></span>Jersey number</label>
+          <label><input type="checkbox" id="optTeam" value="Team colors"><span class="box"></span>Team colors</label>
+          <label><input type="checkbox" value="Fringe"><span class="box"></span>Fringe</label>
+          <label><input type="checkbox" value="Feathers"><span class="box"></span>Feathers</label>
+          <label><input type="checkbox" value="Something else"><span class="box"></span>Something else</label>
+        </div>
+        <p class="mini-notice"><span class="caps">Note</span>Numbers are only added when it's your significant other's jersey number.</p>
+        <input type="hidden" name="Customizations" id="customField" value="None">
+
+        <div class="row cond" id="teamJerseyRow" hidden>
+          <div class="field" id="teamField"><label for="team" class="caps">Team</label><input type="text" id="team" name="Team" placeholder="e.g. Eagles"></div>
+          <div class="field" id="numberField"><label for="jersey" class="caps">Their jersey number</label><input type="text" id="jersey" name="Jersey number" inputmode="numeric" maxlength="3" placeholder="e.g. 23"></div>
+        </div>
+        <div class="ballot confirm" id="confirmBox" hidden>
+          <label><input type="checkbox" id="soConfirm" name="Number confirmed" value="Yes, it's their significant other's number"><span class="box"></span>I confirm this is my significant other's jersey number.</label>
+        </div>
+        <div class="field cond" id="customDetails" hidden><label for="cdetails" class="caps">Customization details <span class="opt">optional</span></label><textarea id="cdetails" name="Customization details" placeholder="Feather color, fringe length, where the number goes…"></textarea></div>
+      </div>
+
+      <div class="part">
+        <h3 class="part-title"><span class="caps">No. 6</span>Anything else</h3>
+        <div class="field"><label for="date" class="caps">Needed by <span class="opt">optional</span></label><input type="date" id="date" name="Needed by"></div>
+        <div class="field"><label for="notes" class="caps">Notes <span class="opt">optional</span></label><textarea id="notes" name="Notes" placeholder="Size, a gift, yarn preferences…"></textarea></div>
+      </div>
+
+      <div class="send">
+        <button type="submit" class="btn" id="submitBtn">Send my request</button>
+        <p class="err" id="formErr" role="alert"></p>
+        <p class="fine">You'll get a confirmation email once it's sent.</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ======================= THANK YOU ======================= -->
+<section class="thanks">
+  <p class="kicker caps">Extra! Extra!</p>
+  <h2>Stop the Presses — Your Request Is In</h2>
+  <p class="deck">Thank you! I'll review your request to see if I can achieve your vision, then reach out on Instagram.</p>
+  <a href="./" class="btn">Back to the front page</a>
+</section>
+</main>
+
+<footer class="caps">
+  <span class="brand">tr0utsw0rld</span>
+  <span>Handmade crochet bags &nbsp;·&nbsp; © <span id="year"></span></span>
+</footer>
+</div>
+
+<script>
+/* ---------- dateline ---------- */
+const now = new Date();
+document.getElementById('today').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+document.getElementById('year').textContent = now.getFullYear();
+
+/* ---------- open / closed (set in ORDER SETTINGS at the top of this file) ---------- */
+const CFG = (typeof SETTINGS !== 'undefined') ? SETTINGS : {};
+const spots = parseInt(CFG.spotsLeft, 10);
+const reopens = CFG.reopens || 'soon';
+const isClosed = !Number.isNaN(spots) && spots <= 0;
+document.querySelectorAll('.reopens').forEach(el=>el.textContent = reopens);
+if(isClosed){
+  document.body.classList.add('closed');
+  document.getElementById('spotsLine').textContent = 'Orders closed';
+  document.getElementById('kicker').textContent = 'Orders closed · Waitlist opens ' + reopens;
+  document.getElementById('startBtn').textContent = 'Orders closed';
+} else if(!Number.isNaN(spots)){
+  const left = spots + (spots === 1 ? ' spot left' : ' spots left');
+  document.getElementById('spotsLine').textContent = left;
+  document.getElementById('kicker').textContent = 'Now taking custom orders · ' + left;
+  document.getElementById('formKicker').textContent = 'Order form · ' + left;
+}
+
+/* ---------- photo helpers ---------- */
+const MAX_TOTAL = 9.5 * 1024 * 1024;   // FormSubmit limit is 10 MB per request
+const canSwap = (()=>{ try{ new DataTransfer(); return true; }catch(e){ return false; } })();
+
+function loadImage(src){
+  return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=src; });
+}
+// shrink big phone photos so the email stays under the limit
+async function compress(file, maxDim=1600, q=.82){
+  if(!canSwap || file.size < 900*1024) return file;
+  try{
+    const img = await loadImage(URL.createObjectURL(file));
+    const s = Math.min(1, maxDim/Math.max(img.width,img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    const blob = await new Promise(r=>c.toBlob(r,'image/jpeg',q));
+    if(!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/,'')+'.jpg', {type:'image/jpeg'});
+  }catch(e){ return file; }
+}
+function swapFile(input, file){
+  const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+}
+
+/* ---------- picture boxes ---------- */
+function wirePlace(box, onFile, onClear){
+  const input = box.querySelector('input[type=file]');
+  const img = box.querySelector('img');
+  const clear = ()=>{ input.value=''; img.removeAttribute('src'); box.classList.remove('filled'); onClear && onClear(); };
+  input.addEventListener('change', async ()=>{
+    const f = input.files[0];
+    if(!f || !f.type.startsWith('image/')){ clear(); return; }
+    const small = await compress(f);
+    if(small !== f) swapFile(input, small);
+    const url = URL.createObjectURL(small);
+    img.src = url; box.classList.add('filled');
+    onFile && onFile(url);
+  });
+  box.querySelector('.x').addEventListener('click', e=>{ e.preventDefault(); clear(); });
+  ['dragenter','dragover'].forEach(ev=>box.addEventListener(ev,()=>box.classList.add('over')));
+  ['dragleave','drop'].forEach(ev=>box.addEventListener(ev,()=>box.classList.remove('over')));
+}
+// stop the browser from opening a photo dropped next to a box
+['dragover','drop'].forEach(ev=>window.addEventListener(ev,e=>{ if(e.target.type!=='file') e.preventDefault(); }));
+
+/* ---------- palette ---------- */
+const chipsEl = document.getElementById('chips');
+const colorbar = document.getElementById('colorbar');
+const paletteField = document.getElementById('paletteField');
+let palette = [];
+
+wirePlace(document.getElementById('palettePlace'),
+  async url=>{ palette = extractPalette(await loadImage(url), 6); renderChips(); colorbar.classList.add('show'); },
+  ()=>{ palette = []; renderChips(); colorbar.classList.remove('show'); }
+);
+document.querySelectorAll('.inspo-places .place').forEach(b=>wirePlace(b));
+
+// pulls the main colors out of a photo: k-means in Lab color space, then favors distinct + colorful ones
+function toLab([r,g,b]){
+  const f=v=>{ v/=255; return v<=0.04045 ? v/12.92 : ((v+0.055)/1.055)**2.4; };
+  const R=f(r), G=f(g), B=f(b);
+  const h=t=>t>0.008856 ? Math.cbrt(t) : 7.787*t+16/116;
+  const x=h((R*.4124+G*.3576+B*.1805)/.95047), y=h(R*.2126+G*.7152+B*.0722), z=h((R*.0193+G*.1192+B*.9505)/1.08883);
+  return [116*y-16, 500*(x-y), 200*(y-z)];
+}
+function extractPalette(img, want){
+  const c = document.createElement('canvas'), S = 100;
+  const sc = Math.min(S/img.width, S/img.height);
+  c.width = Math.max(1,Math.round(img.width*sc)); c.height = Math.max(1,Math.round(img.height*sc));
+  const ctx = c.getContext('2d'); ctx.drawImage(img,0,0,c.width,c.height);
+  const d = ctx.getImageData(0,0,c.width,c.height).data, rgb = [], lab = [];
+  for(let i=0;i<d.length;i+=4) if(d[i+3]>200){ const p=[d[i],d[i+1],d[i+2]]; rgb.push(p); lab.push(toLab(p)); }
+  if(!lab.length) return [];
+  const K = 12, n = lab.length;
+  const order = lab.map((_,i)=>i).sort((a,b)=>lab[a][0]-lab[b][0]);
+  let cents = Array.from({length:K},(_,i)=>lab[order[Math.floor((i+.5)*n/K)]].slice());
+  const assign = new Array(n).fill(0);
+  for(let it=0; it<12; it++){
+    const sums = cents.map(()=>[0,0,0]), cnt = cents.map(()=>0);
+    for(let i=0;i<n;i++){
+      const p=lab[i]; let best=0, bd=1e12;
+      for(let j=0;j<K;j++){ const q=cents[j], dd=(p[0]-q[0])**2+(p[1]-q[1])**2+(p[2]-q[2])**2; if(dd<bd){bd=dd;best=j;} }
+      assign[i]=best; sums[best][0]+=p[0]; sums[best][1]+=p[1]; sums[best][2]+=p[2]; cnt[best]++;
+    }
+    cents = cents.map((q,j)=>cnt[j] ? sums[j].map(v=>v/cnt[j]) : q);
+  }
+  const groups = cents.map(q=>({lab:q, rgb:[0,0,0], n:0}));
+  for(let i=0;i<n;i++){ const g=groups[assign[i]]; g.n++; g.rgb[0]+=rgb[i][0]; g.rgb[1]+=rgb[i][1]; g.rgb[2]+=rgb[i][2]; }
+  const picks = groups.filter(g=>g.n/n > 0.006).map(g=>{
+    const chroma = Math.min(Math.hypot(g.lab[1], g.lab[2]), 70);
+    return {...g, rgb:g.rgb.map(v=>v/g.n), score:(g.n/n)*(0.25 + chroma/35)};
+  }).sort((a,b)=>b.score-a.score);
+  const out = [];
+  for(const g of picks){
+    if(out.length >= want) break;
+    if(!out.some(o=>Math.hypot(o.lab[0]-g.lab[0], o.lab[1]-g.lab[1], o.lab[2]-g.lab[2]) < 16)) out.push(g);
+  }
+  return out.map(g=>'#'+g.rgb.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase());
+}
+
+function renderChips(){
+  chipsEl.innerHTML = palette.map((h,i)=>
+    `<button type="button" class="chip" data-i="${i}" aria-label="Remove ${h}"><i style="background:${h}"></i><span>${h}</span></button>`).join('') +
+    `<label class="chip add" aria-label="Add a color"><i>+</i><span>Add</span><input type="color" id="addColor" value="#af4a6a"></label>`;
+  paletteField.value = palette.join(', ');
+  chipsEl.querySelectorAll('button.chip').forEach(b=>b.onclick=()=>{ palette.splice(+b.dataset.i,1); renderChips(); });
+  document.getElementById('addColor').addEventListener('change', e=>{ palette.push(e.target.value.toUpperCase()); renderChips(); });
+}
+
+/* ---------- customizations ---------- */
+const customBoxes = [...document.querySelectorAll('#customBoxes input')];
+const optJersey = document.getElementById('optJersey'), optTeam = document.getElementById('optTeam');
+function showIf(el, show){ el.hidden = !show; el.querySelectorAll('input,textarea').forEach(i=>i.disabled = !show); }
+function syncCustom(){
+  const picked = customBoxes.filter(b=>b.checked).map(b=>b.value);
+  showIf(document.getElementById('teamJerseyRow'), optJersey.checked || optTeam.checked);
+  showIf(document.getElementById('teamField'), optJersey.checked || optTeam.checked);
+  showIf(document.getElementById('numberField'), optJersey.checked);
+  showIf(document.getElementById('confirmBox'), optJersey.checked);
+  showIf(document.getElementById('customDetails'), picked.length > 0);
+  document.getElementById('customField').value = picked.length ? picked.join(', ') : 'None';
+}
+customBoxes.forEach(b=>b.addEventListener('change', syncCustom));
+syncCustom();
+
+/* ---------- submit ---------- */
+const form = document.getElementById('inquiry');
+const el = n => form.elements[n];
+form.addEventListener('submit', e=>{
+  if(isClosed){ e.preventDefault(); return; }
+  const missing = []; let first = null;
+  const need = (ok, label, target)=>{ if(!ok){ missing.push(label); first = first || target; } };
+  const handle = el('Instagram').value.trim().replace(/\s+/g,'').replace(/^@+/,'');
+  need(el('Name').value.trim(), 'your name', el('Name'));
+  need(handle, 'your Instagram', el('Instagram'));
+  need(/^\S+@\S+\.\S+$/.test(el('email').value.trim()), 'a valid email', el('email'));
+  need(form.querySelector('input[name="Bag style"]:checked'), 'a bag style', document.getElementById('bagPart'));
+  need(document.getElementById('paletteInput').files.length, 'a palette photo', document.getElementById('colorPart'));
+  need(el('Inspo').value.trim(), 'your inspo', el('Inspo'));
+  if(optJersey.checked){
+    need(/^\d{1,3}$/.test(el('Jersey number').value.trim()), 'the jersey number', el('Jersey number'));
+    need(document.getElementById('soConfirm').checked, "a check that it's your significant other's number", document.getElementById('confirmBox'));
+  }
+  const total = [...form.querySelectorAll('input[type=file]')].reduce((s,i)=>s+(i.files[0]?.size||0),0);
+  if(total > MAX_TOTAL) missing.push('smaller photos (10 MB max in total)');
+
+  const err = document.getElementById('formErr');
+  if(missing.length){
+    e.preventDefault();
+    err.textContent = 'Almost there — please add ' + missing.join(', ') + '.';
+    if(first){ first.scrollIntoView({behavior:'smooth',block:'center'}); if(first.focus && first.tagName!=='DIV') first.focus({preventScroll:true}); }
+    return;
+  }
+  err.textContent = '';
+  el('Instagram').value = '@' + handle;
+  el('_subject').value = 'New tr0utsw0rld request from ' + el('Name').value.trim() + ' (@' + handle + ')';
+  form.querySelectorAll('input[type=file]').forEach(i=>{ if(!i.files.length) i.disabled = true; });  // skip empty photo slots
+  document.getElementById('nextUrl').value = location.href.split('#')[0].split('?')[0] + '?sent=1';
+  const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.textContent = 'Sending…';
+});
+window.addEventListener('pageshow', ()=>{
+  const b = document.getElementById('submitBtn'); b.disabled = false; b.textContent = 'Send my request';
+  form.querySelectorAll('input[type=file]').forEach(i=>i.disabled = false);
+  syncCustom();
+});
+
+/* ---------- thank-you state ---------- */
+if(new URLSearchParams(location.search).get('sent') === '1'){ document.body.classList.add('sent'); }
+</script>
+</body>
+</html>
